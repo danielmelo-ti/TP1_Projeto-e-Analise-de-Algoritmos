@@ -1,4 +1,5 @@
 #include "busca.h"
+#include "globo.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@ typedef struct {
     unsigned char *visitadas;
     Posicao *caminho_atual;
     int todos_caminhos;
+    int modo_globo;
     int parar;
     int erro;
     ResultadoBusca *resultado;
@@ -48,8 +50,6 @@ static int guardar_caminho(EstadoBusca *estado, size_t tamanho) {
 
 static void explorar(EstadoBusca *estado, size_t linha, size_t coluna,
                     size_t chaves, size_t tamanho, size_t nivel) {
-    static const int desloca_linha[4] = {-1, 0, 1, 0};
-    static const int desloca_coluna[4] = {0, 1, 0, -1};
     const Labirinto *lab = estado->labirinto;
     char sala;
 
@@ -76,33 +76,25 @@ static void explorar(EstadoBusca *estado, size_t linha, size_t coluna,
             estado->parar = 1;
         }
     } else {
-        for (int direcao = 0; direcao < 4 && !estado->parar && !estado->erro;
+        /* Direcoes: cima, direita, baixo, esquerda (mesma ordem de globo.h).
+         * globo_vizinho cuida dos limites, das paredes e, no modo globo,
+         * da passagem entre bordas opostas. */
+        for (int direcao = 0;
+             direcao < GLOBO_NUM_DIRECOES && !estado->parar && !estado->erro;
              ++direcao) {
-            size_t nova_linha = linha;
-            size_t nova_coluna = coluna;
+            int nova_linha, nova_coluna;
 
-            if (desloca_linha[direcao] < 0) {
-                if (linha == 0) continue;
-                nova_linha--;
-            } else if (desloca_linha[direcao] > 0) {
-                if (linha + 1 >= lab->linhas) continue;
-                nova_linha++;
+            if (!globo_vizinho(lab, (int)linha, (int)coluna, direcao,
+                               estado->modo_globo,
+                               &nova_linha, &nova_coluna)) {
+                continue;
             }
-
-            if (desloca_coluna[direcao] < 0) {
-                if (coluna == 0) continue;
-                nova_coluna--;
-            } else if (desloca_coluna[direcao] > 0) {
-                if (coluna + 1 >= lab->colunas) continue;
-                nova_coluna++;
-            }
-
-            if (lab->celulas[nova_linha][nova_coluna] == '1' ||
-                estado->visitadas[indice(lab, nova_linha, nova_coluna)]) {
+            if (estado->visitadas[indice(lab, (size_t)nova_linha,
+                                         (size_t)nova_coluna)]) {
                 continue;
             }
 
-            explorar(estado, nova_linha, nova_coluna, chaves,
+            explorar(estado, (size_t)nova_linha, (size_t)nova_coluna, chaves,
                      tamanho, nivel + 1);
         }
     }
@@ -119,8 +111,8 @@ void busca_resultado_liberar(ResultadoBusca *resultado) {
     *resultado = (ResultadoBusca){0};
 }
 
-int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
-                   ResultadoBusca *resultado) {
+int busca_resolver_opcoes(const Labirinto *labirinto, int todos_caminhos,
+                          int modo_globo, ResultadoBusca *resultado) {
     EstadoBusca estado = {0};
     size_t total_celulas;
     unsigned char *visitadas;
@@ -132,6 +124,7 @@ int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
     if (labirinto == NULL || labirinto->celulas == NULL ||
         labirinto->linhas == 0 || labirinto->colunas == 0 ||
         (todos_caminhos != 0 && todos_caminhos != 1) ||
+        (modo_globo != 0 && modo_globo != 1) ||
         labirinto->linhas > SIZE_MAX / labirinto->colunas) {
         return -1;
     }
@@ -155,6 +148,7 @@ int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
     estado.visitadas = visitadas;
     estado.caminho_atual = caminho_atual;
     estado.todos_caminhos = todos_caminhos;
+    estado.modo_globo = modo_globo;
     estado.resultado = resultado;
 
     if (labirinto->celulas[labirinto->inicio.linha]
@@ -171,4 +165,9 @@ int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
         return -1;
     }
     return resultado->quantidade > 0 ? 1 : 0;
+}
+
+int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
+                   ResultadoBusca *resultado) {
+    return busca_resolver_opcoes(labirinto, todos_caminhos, 0, resultado);
 }

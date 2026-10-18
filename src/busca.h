@@ -15,9 +15,12 @@ typedef struct {
     size_t nivel_maximo;
 } ResultadoBusca;
 
-/* Retorna 1 se houver solucao, 0 se nao houver e -1 em caso de erro. */
+// Retorna 1 se houver solucao, 0 se nao houver e -1 em caso de erro
 int busca_resolver(const Labirinto *labirinto, int todos_caminhos,
                    ResultadoBusca *resultado);
+
+int busca_resolver_opcoes(const Labirinto *labirinto, int todos_caminhos,
+                          int modo_globo, ResultadoBusca *resultado);
 
 void busca_resultado_liberar(ResultadoBusca *resultado);
 

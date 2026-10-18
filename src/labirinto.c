@@ -16,7 +16,7 @@ static void informar_erro(char *buffer, size_t capacidade, const char *formato, 
     va_end(argumentos);
 }
 
-/* Le uma linha de qualquer tamanho. 1 = linha lida, 0 = EOF, -1 = erro. */
+// Le uma linha de qualquer tamanho. 1 = linha lida, 0 = EOF, -1 = erro
 static int ler_linha(FILE *arquivo, char **linha, size_t *capacidade) {
     size_t tamanho = 0;
     int ch;

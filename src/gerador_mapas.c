@@ -1,6 +1,3 @@
-/* Gerador de arquivos de entrada para o TP1 de PAA (extra opcional).
- * Programa independente, em C11, sem bibliotecas externas.
- */
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,10 +24,8 @@ static int numero(const char *texto, size_t *resultado) {
     return 0;
 }
 
-/* Sorteio em [0, limite), adequado para mapas didaticos. */
 static size_t sorteio(size_t limite) {
     if (limite <= 1) return 0;
-    /* Evita limites acima de RAND_MAX para o embaralhamento. */
     if (limite <= (size_t)RAND_MAX)
         return (size_t)rand() % limite;
     size_t alto = (size_t)(unsigned)rand();
@@ -47,7 +42,6 @@ static void embaralhar(size_t *v, size_t n) {
     }
 }
 
-/* Ordem serpentina: indices consecutivos representam celulas vizinhas. */
 static size_t serpentina(size_t passo, size_t colunas) {
     size_t linha = passo / colunas;
     size_t pos_na_linha = passo % colunas;
@@ -125,21 +119,18 @@ int main(int argc, char **argv) {
 
     if (garantir) {
         size_t disponiveis = total - paredes;
-        /* Um pouco de corredor entre as chaves quando ha espaco disponivel. */
         size_t caminho = chaves + 2;
         size_t extras = (disponiveis - caminho < 6) ? disponiveis - caminho : 6;
         caminho += extras;
-        /* Escolhe um prefixo de um percurso serpentino sem repeticoes. */
         for (size_t i = 0; i < caminho; ++i) {
             size_t idx = serpentina(i, colunas);
-            mapa[idx] = '.';  /* celula reservada ate a atribuicao final */
+            mapa[idx] = '.';  
         }
         size_t livres = 0;
         for (size_t i = 0; i < total; ++i)
             if (mapa[i] == '0') indices[livres++] = i;
         embaralhar(indices, livres);
         for (size_t i = 0; i < paredes; ++i) mapa[indices[i]] = '1';
-        /* Sorteia as chaves entre as celulas internas do corredor. */
         for (size_t i = 1; i + 1 < caminho; ++i)
             indices[i - 1] = serpentina(i, colunas);
         embaralhar(indices, caminho - 2);
