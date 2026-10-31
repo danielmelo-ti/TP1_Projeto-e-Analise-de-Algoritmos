@@ -3,7 +3,7 @@
 Trabalho Prático 1 — Projeto e Análise de Algoritmos (UFV — Campus Florestal).
 Professor: Daniel Mendes Barbosa.
 
-**Integrantes:** _(preencher com nome e matrícula dos quatro integrantes)_
+_
 
 O programa, escrito em **C**, usa **backtracking** para encontrar um caminho em um labirinto: parte da sala inicial, coleta todas as chaves necessárias e chega ao baú, andando só nas quatro direções, sem atravessar paredes e sem repetir salas. O resultado é um caminho válido ou a mensagem de que não há caminho possível.
 
